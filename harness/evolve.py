@@ -24,6 +24,7 @@ from harness.db import (
     update_candidate,
 )
 from harness.utils import build_gpu_env, default_uv_bin, format_log_line, log
+from harness.utils import terminate_gpu_processes, terminate_workspace_processes, wait_for_gpu_idle
 from harness.workspaces import WorktreeSpec, create_generation_worktrees
 
 METRIC_NAMES = (
@@ -154,6 +155,7 @@ def timeout_summary(session: CandidateSession, summary: str) -> str:
 def benchmark_generation(
     conn: sqlite3.Connection, specs: list[WorktreeSpec], args: argparse.Namespace
 ) -> None:
+    drain_candidate_runtime(specs)
     for spec in specs:
         agent_status = get_candidate_agent_status(conn, spec.generation, spec.name)
         if spec.kind == "candidate" and agent_status != "ready":
@@ -172,6 +174,7 @@ def benchmark_generation(
 
 
 def benchmark_worktree(spec: WorktreeSpec, args: argparse.Namespace) -> dict[str, object]:
+    wait_for_workspace_gpu(spec)
     benchmark_source = materialize_benchmark_source(spec)
     compile_check = subprocess.run(
         [sys.executable, "-m", "py_compile", "train.py"],
@@ -213,9 +216,13 @@ def benchmark_worktree(spec: WorktreeSpec, args: argparse.Namespace) -> dict[str
                 spec.train_log_path,
                 format_log_line("[HARNESS] benchmark timed out") + "\n",
             )
+            terminate_workspace_processes(spec.path)
+            wait_for_workspace_gpu(spec)
             return benchmark_outcome("timeout", spec)
 
     metrics = parse_metrics(spec.train_log_path)
+    terminate_workspace_processes(spec.path)
+    wait_for_workspace_gpu(spec)
     if result.returncode != 0 or metrics["val_bpb"] is None:
         return benchmark_outcome("failed", spec, metrics)
     return benchmark_outcome("ok", spec, metrics)
@@ -322,6 +329,31 @@ def has_benchmark_candidate_state(spec: WorktreeSpec) -> bool:
     train_changed = train_path.exists() and train_path.read_bytes() != baseline_bytes
     best_changed = best_path.exists() and best_path.read_bytes() != baseline_bytes
     return train_changed or best_changed
+
+
+def drain_candidate_runtime(specs: list[WorktreeSpec]) -> None:
+    for spec in specs:
+        if spec.kind != "candidate":
+            continue
+        terminate_workspace_processes(spec.path)
+        terminate_gpu_processes(spec.gpu_id)
+    waited_gpu_ids: set[int] = set()
+    for spec in specs:
+        if spec.gpu_id in waited_gpu_ids:
+            continue
+        wait_for_workspace_gpu(spec)
+        waited_gpu_ids.add(spec.gpu_id)
+
+
+def wait_for_workspace_gpu(spec: WorktreeSpec) -> None:
+    if not wait_for_gpu_idle(spec.gpu_id):
+        append_line(
+            spec.train_log_path,
+            format_log_line(
+                f"[HARNESS] GPU {spec.gpu_id} still busy after cleanup; proceeding anyway"
+            )
+            + "\n",
+        )
 
 
 def train_sha256(path: Path) -> str:

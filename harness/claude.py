@@ -9,7 +9,7 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
 
-from harness.utils import build_gpu_env
+from harness.utils import build_gpu_env, terminate_gpu_processes
 
 CLAUDE_ALLOWED_TOOLS = "Bash Edit Read MultiEdit Write Glob Grep"
 
@@ -45,12 +45,14 @@ def run_candidate_sessions(specs: list[Any], options: ClaudeOptions) -> list[Can
         for session in active:
             session.timed_out = True
             terminate_process_group(session.process)
+            terminate_gpu_processes(session.spec.gpu_id)
         raise
 
     for session in active:
         if session.process.poll() is None:
             session.timed_out = True
             terminate_process_group(session.process)
+            terminate_gpu_processes(session.spec.gpu_id)
 
     return sessions
 
