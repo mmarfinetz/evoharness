@@ -1,0 +1,72 @@
+{
+  "_comment": "Template for optimizing a Foundry hook production policy. Replace paths, validation commands, evaluator command, and metric names to match your repo.",
+  "objective": {
+    "name": "production_objective",
+    "direction": "minimize",
+    "description": "Lower is better for this production-oriented hook benchmark.",
+    "primary_metric": "production_objective"
+  },
+  "editable_artifacts": [
+    "src/Hook.sol"
+  ],
+  "context_files": [
+    "README.md",
+    "foundry.toml",
+    "src/Hook.sol",
+    "test/Hook.t.sol",
+    "test/HookProperties.t.sol",
+    "script/evaluate_production_policy.py"
+  ],
+  "forbidden_paths": [
+    "broadcast",
+    "cache",
+    "lib",
+    "out",
+    "script",
+    "test",
+    "toolchain"
+  ],
+  "support_files": [],
+  "validation_commands": [
+    [
+      "forge",
+      "build"
+    ],
+    [
+      "forge",
+      "test",
+      "--match-path",
+      "test/Hook.t.sol"
+    ],
+    [
+      "forge",
+      "test",
+      "--match-path",
+      "test/HookProperties.t.sol"
+    ]
+  ],
+  "benchmark_command": [
+    "python3",
+    "script/evaluate_production_policy.py",
+    "--hook",
+    "src/Hook.sol",
+    "--json-out",
+    ".harness/foundry_hook/metrics.json"
+  ],
+  "benchmark_output_path": ".harness/foundry_hook/metrics.json",
+  "required_metrics": [
+    "production_objective",
+    "shortfall_penalty",
+    "overshoot_penalty",
+    "width_penalty",
+    "admission_rate"
+  ],
+  "repo_required_paths": [
+    "foundry.toml",
+    "src/Hook.sol",
+    "test/Hook.t.sol",
+    "test/HookProperties.t.sol",
+    "script/evaluate_production_policy.py"
+  ],
+  "requires_gpu": false
+}

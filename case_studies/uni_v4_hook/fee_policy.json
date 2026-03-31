@@ -1,0 +1,100 @@
+{
+  "objective": {
+    "name": "unrecaptured_lvr_wad",
+    "direction": "minimize",
+    "description": "Lower unrecaptured toxic-flow value is better for this hook fee-policy benchmark.",
+    "primary_metric": "unrecaptured_lvr_wad"
+  },
+  "editable_artifacts": [
+    "src/OracleAnchoredLVRHook.sol"
+  ],
+  "context_files": [
+    "foundry.toml",
+    "src/OracleAnchoredLVRHook.sol",
+    "src/oracles/ChainlinkReferenceOracle.sol",
+    "test/OracleAnchoredLVRHook.t.sol",
+    "test/OracleAnchoredLVRHookFuzz.t.sol",
+    "test/OracleAnchoredLVRHookInvariants.t.sol",
+    "test/OracleAnchoredLVRHookProperties.t.sol",
+    "test/helpers/ManualAggregatorV3.sol",
+    "script/lvr_validation.py",
+    "script/lvr_validation_runner.py"
+  ],
+  "forbidden_paths": [
+    "broadcast",
+    "cache",
+    "lib",
+    "out",
+    "script",
+    "test",
+    "toolchain"
+  ],
+  "support_files": [
+    {
+      "source": "support/OracleAnchoredLVRHookEvaluator.t.sol",
+      "destination": "test/harness/OracleAnchoredLVRHookEvaluator.t.sol",
+      "context": true
+    }
+  ],
+  "validation_commands": [
+    [
+      "forge",
+      "build"
+    ],
+    [
+      "forge",
+      "test",
+      "--match-path",
+      "test/ChainlinkReferenceOracle.t.sol"
+    ],
+    [
+      "forge",
+      "test",
+      "--match-path",
+      "test/OracleAnchoredLVRHook.t.sol"
+    ],
+    [
+      "forge",
+      "test",
+      "--match-path",
+      "test/OracleAnchoredLVRHookProperties.t.sol"
+    ],
+    [
+      "forge",
+      "test",
+      "--match-path",
+      "test/OracleAnchoredLVRHookFuzz.t.sol"
+    ]
+  ],
+  "benchmark_command": [
+    "forge",
+    "test",
+    "--match-path",
+    "test/harness/OracleAnchoredLVRHookEvaluator.t.sol",
+    "--match-test",
+    "test_writesHarnessMetrics"
+  ],
+  "benchmark_output_path": ".harness/foundry_hook/metrics.json",
+  "required_metrics": [
+    "unrecaptured_lvr_wad",
+    "lp_net_from_toxic_flow_wad",
+    "gross_lvr_wad",
+    "recapture_ratio_bps",
+    "admission_rate_bps",
+    "mean_required_width_ticks",
+    "cap_hit_rate_bps"
+  ],
+  "repo_required_paths": [
+    "foundry.toml",
+    "src/OracleAnchoredLVRHook.sol",
+    "src/oracles/ChainlinkReferenceOracle.sol",
+    "test/OracleAnchoredLVRHook.t.sol",
+    "test/OracleAnchoredLVRHookFuzz.t.sol",
+    "test/OracleAnchoredLVRHookInvariants.t.sol",
+    "test/OracleAnchoredLVRHookProperties.t.sol",
+    "test/helpers/ManualAggregatorV3.sol",
+    "script/lvr_validation.py",
+    "script/lvr_validation_runner.py"
+  ],
+  "requires_gpu": false
+}

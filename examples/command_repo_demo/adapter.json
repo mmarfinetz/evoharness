@@ -1,0 +1,54 @@
+{
+  "objective": {
+    "name": "score",
+    "direction": "maximize",
+    "description": "Higher score is better. The benchmark measures how closely candidate.py matches the reference curve.",
+    "primary_metric": "score"
+  },
+  "editable_artifacts": [
+    "candidate.py"
+  ],
+  "context_files": [
+    "README.md",
+    "evaluate.py",
+    "test_candidate.py"
+  ],
+  "forbidden_paths": [
+    "evaluate.py",
+    "test_candidate.py"
+  ],
+  "support_files": [],
+  "validation_commands": [
+    [
+      "python3",
+      "-m",
+      "py_compile",
+      "candidate.py",
+      "evaluate.py",
+      "test_candidate.py"
+    ],
+    [
+      "python3",
+      "-m",
+      "unittest",
+      "-q",
+      "test_candidate.py"
+    ]
+  ],
+  "benchmark_command": [
+    "python3",
+    "evaluate.py"
+  ],
+  "required_metrics": [
+    "score",
+    "rmse",
+    "max_abs_error"
+  ],
+  "repo_required_paths": [
+    "README.md",
+    "candidate.py",
+    "evaluate.py",
+    "test_candidate.py"
+  ],
+  "requires_gpu": false
+}

@@ -1,0 +1,68 @@
+{
+  "_comment": "Template for optimizing a Foundry hook fee policy. Replace repo-relative paths, tests, evaluator command, and metric names to match your repo.",
+  "objective": {
+    "name": "policy_objective",
+    "direction": "minimize",
+    "description": "Lower is better for this hook fee-policy benchmark.",
+    "primary_metric": "policy_objective"
+  },
+  "editable_artifacts": [
+    "src/Hook.sol",
+    "src/HookPolicy.sol"
+  ],
+  "context_files": [
+    "README.md",
+    "foundry.toml",
+    "src/Hook.sol",
+    "src/HookPolicy.sol",
+    "test/Hook.t.sol",
+    "script/evaluate_fee_policy.py"
+  ],
+  "forbidden_paths": [
+    "broadcast",
+    "cache",
+    "lib",
+    "out",
+    "script",
+    "test",
+    "toolchain"
+  ],
+  "support_files": [],
+  "validation_commands": [
+    [
+      "forge",
+      "build"
+    ],
+    [
+      "forge",
+      "test",
+      "--match-path",
+      "test/Hook.t.sol"
+    ]
+  ],
+  "benchmark_command": [
+    "python3",
+    "script/evaluate_fee_policy.py",
+    "--hook",
+    "src/Hook.sol",
+    "--policy",
+    "src/HookPolicy.sol",
+    "--json-out",
+    ".harness/foundry_hook/metrics.json"
+  ],
+  "benchmark_output_path": ".harness/foundry_hook/metrics.json",
+  "required_metrics": [
+    "policy_objective",
+    "execution_quality",
+    "admission_rate",
+    "fallback_rate"
+  ],
+  "repo_required_paths": [
+    "foundry.toml",
+    "src/Hook.sol",
+    "src/HookPolicy.sol",
+    "test/Hook.t.sol",
+    "script/evaluate_fee_policy.py"
+  ],
+  "requires_gpu": false
+}

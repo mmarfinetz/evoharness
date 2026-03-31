@@ -1,0 +1,43 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="640" viewBox="0 0 1280 640" role="img" aria-labelledby="title desc">
+  <title id="title">evo-harness social preview</title>
+  <desc id="desc">Evolutionary optimization framework for code repositories.</desc>
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#f6efe3" />
+      <stop offset="100%" stop-color="#efe1cb" />
+    </linearGradient>
+    <linearGradient id="accent" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#ff7a18" />
+      <stop offset="100%" stop-color="#ffb347" />
+    </linearGradient>
+    <pattern id="grid" width="48" height="48" patternUnits="userSpaceOnUse">
+      <path d="M 48 0 L 0 0 0 48" fill="none" stroke="#d8c5a5" stroke-width="1"/>
+    </pattern>
+  </defs>
+
+  <rect width="1280" height="640" fill="url(#bg)" />
+  <rect width="1280" height="640" fill="url(#grid)" opacity="0.45" />
+
+  <circle cx="1090" cy="118" r="158" fill="none" stroke="#2a231a" stroke-width="2" opacity="0.14" />
+  <circle cx="1090" cy="118" r="118" fill="none" stroke="#2a231a" stroke-width="2" opacity="0.12" />
+  <circle cx="150" cy="535" r="120" fill="none" stroke="#2a231a" stroke-width="2" opacity="0.10" />
+
+  <rect x="94" y="92" width="176" height="14" rx="7" fill="url(#accent)" />
+  <rect x="94" y="478" width="320" height="14" rx="7" fill="#2a231a" opacity="0.10" />
+
+  <g fill="#201a13">
+    <text x="92" y="248" font-size="108" font-weight="700" font-family="Avenir Next, Helvetica Neue, Arial, sans-serif" letter-spacing="-2">evo-harness</text>
+    <text x="98" y="316" font-size="30" font-weight="600" font-family="Avenir Next, Helvetica Neue, Arial, sans-serif" fill="#6a5844">Evolutionary optimization for code repos</text>
+    <text x="98" y="382" font-size="25" font-weight="400" font-family="Georgia, Times New Roman, serif" fill="#4b3f31">Real validation. Real benchmarks. Population-based search.</text>
+  </g>
+
+  <g transform="translate(846 264)">
+    <rect x="0" y="0" width="304" height="166" rx="26" fill="#201a13" />
+    <rect x="22" y="24" width="112" height="12" rx="6" fill="#ffb347" />
+    <rect x="22" y="56" width="190" height="10" rx="5" fill="#f6efe3" opacity="0.92" />
+    <rect x="22" y="82" width="162" height="10" rx="5" fill="#f6efe3" opacity="0.72" />
+    <rect x="22" y="108" width="214" height="10" rx="5" fill="#f6efe3" opacity="0.52" />
+    <circle cx="242" cy="112" r="34" fill="#ff7a18" />
+    <path d="M222 112 L239 129 L270 96" fill="none" stroke="#201a13" stroke-width="10" stroke-linecap="round" stroke-linejoin="round" />
+  </g>
+</svg>

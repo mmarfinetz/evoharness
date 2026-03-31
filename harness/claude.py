@@ -9,14 +9,15 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
 
-from harness.utils import build_gpu_env, terminate_gpu_processes
+from harness.utils import build_worker_env, terminate_gpu_processes
 
 CLAUDE_ALLOWED_TOOLS = "Bash Edit Read MultiEdit Write Glob Grep"
 
 
 @dataclass(frozen=True)
 class ClaudeOptions:
-    claude_bin: str
+    runner: str
+    agent_bin: str
     effort: str
     timeout_minutes: int
     model: str | None = None
@@ -58,33 +59,18 @@ def run_candidate_sessions(specs: list[Any], options: ClaudeOptions) -> list[Can
 
 
 def start_candidate_session(spec: Any, options: ClaudeOptions) -> CandidateSession:
-    system_prompt = Path(spec.path / "system.md").read_text()
+    system_prompt = Path(spec.system_prompt_path).read_text()
     stdout_path = spec.claude_log_path
     stderr_path = spec.claude_stderr_path
     debug_log_path = spec.claude_debug_log_path
     status_path = spec.claude_status_path
-    command = [
-        options.claude_bin,
-        "--print",
-        "--output-format",
-        "stream-json",
-        "--include-partial-messages",
-        "--verbose",
-        "--debug-file",
-        str(debug_log_path),
-        "--permission-mode",
-        "dontAsk",
-        "--allowedTools",
-        CLAUDE_ALLOWED_TOOLS,
-        "--system-prompt",
-        system_prompt,
-        "--effort",
-        options.effort,
-    ]
-    if options.model:
-        command.extend(["--model", options.model])
-    command.append("Start now. Work continuously until the harness interrupts you.")
-    env = build_gpu_env(spec.gpu_id)
+    command = build_agent_command(
+        spec=spec,
+        options=options,
+        system_prompt=system_prompt,
+        debug_log_path=debug_log_path,
+    )
+    env = build_worker_env(spec.gpu_id)
 
     write_json(
         status_path,
@@ -118,6 +104,59 @@ def start_candidate_session(spec: Any, options: ClaudeOptions) -> CandidateSessi
         },
     )
     return CandidateSession(spec=spec, process=process, command=command)
+
+
+def build_agent_command(
+    *,
+    spec: Any,
+    options: ClaudeOptions,
+    system_prompt: str,
+    debug_log_path: Path,
+) -> list[str]:
+    if options.runner == "codex":
+        prompt = (
+            system_prompt
+            + "\n\nStart now. Read program.md and work continuously until the harness interrupts you."
+        )
+        command = [
+            options.agent_bin,
+            "exec",
+            "--json",
+            "--skip-git-repo-check",
+            "--cd",
+            str(spec.path),
+            "--full-auto",
+            "--color",
+            "never",
+        ]
+        command.extend(["-c", f'model_reasoning_effort="{options.effort}"'])
+        if options.model:
+            command.extend(["--model", options.model])
+        command.append(prompt)
+        return command
+
+    command = [
+        options.agent_bin,
+        "--print",
+        "--output-format",
+        "stream-json",
+        "--include-partial-messages",
+        "--verbose",
+        "--debug-file",
+        str(debug_log_path),
+        "--permission-mode",
+        "dontAsk",
+        "--allowedTools",
+        CLAUDE_ALLOWED_TOOLS,
+        "--system-prompt",
+        system_prompt,
+        "--effort",
+        "high" if options.effort == "xhigh" else options.effort,
+    ]
+    if options.model:
+        command.extend(["--model", options.model])
+    command.append("Start now. Read program.md and work continuously until the harness interrupts you.")
+    return command
 
 
 def finalize_session_processes(sessions: list[CandidateSession]) -> None:

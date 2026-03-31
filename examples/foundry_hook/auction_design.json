@@ -1,0 +1,57 @@
+{
+  "_comment": "Template for optimizing a replay-driven auction or fallback design in a Foundry repo. Replace file paths, unit tests, evaluator command, and metrics to match your repo.",
+  "objective": {
+    "name": "auction_design_objective",
+    "direction": "minimize",
+    "description": "Lower is better for this auction-design benchmark.",
+    "primary_metric": "auction_design_objective"
+  },
+  "editable_artifacts": [
+    "script/run_auction_backtest.py"
+  ],
+  "context_files": [
+    "README.md",
+    "script/run_auction_backtest.py",
+    "script/test_run_auction_backtest.py",
+    "script/evaluate_auction_design.py"
+  ],
+  "forbidden_paths": [
+    "broadcast",
+    "cache",
+    "lib",
+    "out",
+    "test",
+    "toolchain",
+    "README.md",
+    "script/test_run_auction_backtest.py"
+  ],
+  "support_files": [],
+  "validation_commands": [
+    [
+      "python3",
+      "-m",
+      "unittest",
+      "script.test_run_auction_backtest"
+    ]
+  ],
+  "benchmark_command": [
+    "python3",
+    "script/evaluate_auction_design.py",
+    "--json-out",
+    ".harness/foundry_hook/metrics.json"
+  ],
+  "benchmark_output_path": ".harness/foundry_hook/metrics.json",
+  "required_metrics": [
+    "auction_design_objective",
+    "stress_pass_rate",
+    "normal_no_trigger_rate",
+    "execution_quality",
+    "fallback_rate"
+  ],
+  "repo_required_paths": [
+    "script/run_auction_backtest.py",
+    "script/test_run_auction_backtest.py",
+    "script/evaluate_auction_design.py"
+  ],
+  "requires_gpu": false
+}
