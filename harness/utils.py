@@ -8,6 +8,10 @@ from datetime import datetime
 from pathlib import Path
 
 
+DEFAULT_COMMAND_TIMEOUT_SECONDS = 30
+SHORT_COMMAND_TIMEOUT_SECONDS = 10
+
+
 def detect_gpu_ids() -> list[str]:
     cuda_visible_devices = os.environ.get("CUDA_VISIBLE_DEVICES")
     if cuda_visible_devices is not None:
@@ -28,6 +32,7 @@ def detect_gpu_ids() -> list[str]:
         capture_output=True,
         text=True,
         check=False,
+        timeout=DEFAULT_COMMAND_TIMEOUT_SECONDS,
     )
     if result.returncode != 0:
         return []
@@ -53,11 +58,16 @@ def _default_bin(name: str) -> str:
     return str(Path.home() / ".local" / "bin" / name)
 
 
-def build_gpu_env(gpu_id: int) -> dict[str, str]:
+def build_worker_env(gpu_id: int | None) -> dict[str, str]:
     env = os.environ.copy()
-    env["CUDA_VISIBLE_DEVICES"] = selected_gpu_id(gpu_id)
-    env["CUDA_DEVICE_ORDER"] = "PCI_BUS_ID"
+    if gpu_id is not None:
+        env["CUDA_VISIBLE_DEVICES"] = selected_gpu_id(gpu_id)
+        env["CUDA_DEVICE_ORDER"] = "PCI_BUS_ID"
     return env
+
+
+def build_gpu_env(gpu_id: int | None) -> dict[str, str]:
+    return build_worker_env(gpu_id)
 
 
 def terminate_workspace_processes(workspace: Path) -> None:
@@ -79,6 +89,7 @@ def list_workspace_processes(workspace: Path) -> list[int]:
         capture_output=True,
         text=True,
         check=False,
+        timeout=SHORT_COMMAND_TIMEOUT_SECONDS,
     )
     if result.returncode == 1:
         return []
@@ -87,7 +98,10 @@ def list_workspace_processes(workspace: Path) -> list[int]:
     return [int(line) for line in result.stdout.splitlines() if line.strip().isdigit()]
 
 
-def wait_for_gpu_idle(gpu_id: int, timeout_seconds: int = 30) -> bool:
+def wait_for_gpu_idle(gpu_id: int | None, timeout_seconds: int = 30) -> bool:
+    if gpu_id is None:
+        return True
+
     nvidia_smi = shutil.which("nvidia-smi")
     if nvidia_smi is None:
         return True
@@ -101,7 +115,9 @@ def wait_for_gpu_idle(gpu_id: int, timeout_seconds: int = 30) -> bool:
     return not gpu_has_compute_processes(nvidia_smi, target_gpu)
 
 
-def terminate_gpu_processes(gpu_id: int) -> None:
+def terminate_gpu_processes(gpu_id: int | None) -> None:
+    if gpu_id is None:
+        return
     for pid in gpu_process_pids(gpu_id):
         _terminate_pid(pid)
 
@@ -123,6 +139,7 @@ def _gpu_process_rows(nvidia_smi: str, target_gpu: str) -> list[tuple[str, int]]
         capture_output=True,
         text=True,
         check=False,
+        timeout=DEFAULT_COMMAND_TIMEOUT_SECONDS,
     )
     if gpu_result.returncode != 0:
         return []
@@ -143,6 +160,7 @@ def _gpu_process_rows(nvidia_smi: str, target_gpu: str) -> list[tuple[str, int]]
         capture_output=True,
         text=True,
         check=False,
+        timeout=DEFAULT_COMMAND_TIMEOUT_SECONDS,
     )
     if process_result.returncode not in (0, 1):
         return []
@@ -164,6 +182,7 @@ def _signal_matching_processes(pattern: str, signal_name: str) -> None:
         capture_output=True,
         text=True,
         check=False,
+        timeout=SHORT_COMMAND_TIMEOUT_SECONDS,
     )
 
 
@@ -193,6 +212,10 @@ def default_claude_bin() -> str:
     return _default_bin("claude")
 
 
+def default_codex_bin() -> str:
+    return _default_bin("codex")
+
+
 def default_uv_bin() -> str:
     return _default_bin("uv")
 
@@ -214,8 +237,15 @@ def run_command(
     *,
     check: bool = True,
     text: bool = True,
+    timeout: int = DEFAULT_COMMAND_TIMEOUT_SECONDS,
 ) -> subprocess.CompletedProcess:
-    result = subprocess.run(command, capture_output=True, text=text, check=False)
+    result = subprocess.run(
+        command,
+        capture_output=True,
+        text=text,
+        check=False,
+        timeout=timeout,
+    )
     if check and result.returncode != 0:
         raise SystemExit(
             "command failed:\n"

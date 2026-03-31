@@ -1,0 +1,94 @@
+{
+  "objective": {
+    "name": "dutch_auction_objective",
+    "direction": "minimize",
+    "description": "Lower is better for this auction-design benchmark: penalize stress-window underperformance, unnecessary triggering in normal regimes, and weak execution quality.",
+    "primary_metric": "dutch_auction_objective"
+  },
+  "editable_artifacts": [
+    "script/run_dutch_auction_backtest.py"
+  ],
+  "context_files": [
+    "README.md",
+    "Next_steps.md",
+    "script/run_dutch_auction_backtest.py",
+    "script/test_run_dutch_auction_backtest.py",
+    "script/run_backtest_validation_report.py",
+    "script/test_run_backtest_validation_report.py",
+    "script/lvr_historical_replay.py",
+    "script/lvr_validation.py",
+    "script/label_config.json",
+    "cache/backtest_manifest_2026-03-19_2p_stress.json"
+  ],
+  "forbidden_paths": [
+    "broadcast",
+    "cache",
+    "lib",
+    "out",
+    "test",
+    "toolchain",
+    "README.md",
+    "Next_steps.md",
+    "script/test_run_dutch_auction_backtest.py",
+    "script/run_backtest_validation_report.py",
+    "script/test_run_backtest_validation_report.py",
+    "script/lvr_historical_replay.py",
+    "script/lvr_validation.py",
+    "script/label_config.json"
+  ],
+  "support_files": [
+    {
+      "source": "support/evaluate_auction_design.py",
+      "destination": ".harness/foundry_hook/evaluate_auction_design.py",
+      "context": true
+    }
+  ],
+  "validation_commands": [
+    [
+      "python3",
+      "-m",
+      "unittest",
+      "script.test_run_dutch_auction_backtest"
+    ],
+    [
+      "python3",
+      "-m",
+      "unittest",
+      "script.test_run_backtest_validation_report"
+    ]
+  ],
+  "benchmark_command": [
+    "python3",
+    ".harness/foundry_hook/evaluate_auction_design.py"
+  ],
+  "benchmark_output_path": ".harness/foundry_hook/metrics.json",
+  "required_metrics": [
+    "dutch_auction_objective",
+    "stress_go_pass_rate",
+    "normal_no_auction_pass_rate",
+    "stress_lp_uplift_quote_total",
+    "stress_lp_improvement_ratio",
+    "stress_fill_rate",
+    "stress_fallback_rate",
+    "stress_failclosed_rate",
+    "normal_trigger_rate",
+    "normal_no_reference_rate",
+    "mean_clearing_concession_bps",
+    "mean_time_to_fill_seconds",
+    "real_window_count"
+  ],
+  "repo_required_paths": [
+    "README.md",
+    "Next_steps.md",
+    "script/run_dutch_auction_backtest.py",
+    "script/test_run_dutch_auction_backtest.py",
+    "script/run_backtest_validation_report.py",
+    "script/test_run_backtest_validation_report.py",
+    "script/lvr_historical_replay.py",
+    "script/lvr_validation.py",
+    "script/label_config.json",
+    "cache/backtest_manifest_2026-03-19_2p_stress.json",
+    "cache/backtest_results_rerun_20260327_v3"
+  ],
+  "requires_gpu": false
+}
